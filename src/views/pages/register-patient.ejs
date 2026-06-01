@@ -1,0 +1,14 @@
+<section class="auth-card">
+  <h1>Create patient account</h1>
+  <p>Patients can register for free and book appointments after sign-in.</p>
+  <form method="post" action="/auth/register/patient">
+    <div class="row">
+      <label>First name<input name="first_name" required></label>
+      <label>Last name<input name="last_name"></label>
+    </div>
+    <label>Email<input type="email" name="email" required></label>
+    <label>Phone<input name="phone"></label>
+    <label>Password<input type="password" name="password" minlength="8" required></label>
+    <button class="button">Create Account</button>
+  </form>
+</section>

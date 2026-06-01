@@ -1,0 +1,13 @@
+<section class="auth-card">
+  <h1>Welcome back</h1>
+  <p>Sign in with email, Google, or Facebook.</p>
+  <form method="post" action="/auth/login">
+    <label>Email<input type="email" name="email" required autofocus></label>
+    <label>Password<input type="password" name="password" required></label>
+    <button class="button">Sign In</button>
+  </form>
+  <div class="divider">or continue with</div>
+  <form method="post" action="/auth/oauth/google"><button class="oauth">Continue with Google</button></form>
+  <form method="post" action="/auth/oauth/facebook"><button class="oauth facebook">Continue with Facebook</button></form>
+  <p class="small">New patient? <a href="/auth/register/patient">Create an account</a></p>
+</section>

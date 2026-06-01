@@ -1,0 +1,32 @@
+<section class="section">
+  <p class="eyebrow"><%= mode %></p>
+  <h1><%= title %></h1>
+  <p>Signed in as <%= currentProfile?.full_name || currentUser.email %>.</p>
+
+  <% if (mode === 'superadmin') { %>
+    <div class="stats dashboard-stats">
+      <span><strong><%= dashboard.totals?.hospitals || 0 %></strong> hospitals</span>
+      <span><strong><%= dashboard.totals?.doctors || 0 %></strong> doctors</span>
+      <span><strong><%= dashboard.totals?.patients || 0 %></strong> patients</span>
+      <span><strong><%= dashboard.totals?.appointments || 0 %></strong> appointments</span>
+    </div>
+    <h2>Pending doctor verification</h2>
+    <div class="list">
+      <% (dashboard.verifications || []).forEach((item) => { %>
+        <article class="card"><strong><%= item.license_number %></strong><p><%= item.status %></p></article>
+      <% }) %>
+      <% if (!(dashboard.verifications || []).length) { %><p class="empty">No pending verifications.</p><% } %>
+    </div>
+  <% } else { %>
+    <h2>Appointments</h2>
+    <div class="list">
+      <% (dashboard.appointments || []).forEach((item) => { %>
+        <article class="card">
+          <strong><%= item.appointment_date %> serial #<%= item.serial_number %></strong>
+          <p><%= item.status %></p>
+        </article>
+      <% }) %>
+      <% if (!(dashboard.appointments || []).length) { %><p class="empty">No appointments yet.</p><% } %>
+    </div>
+  <% } %>
+</section>

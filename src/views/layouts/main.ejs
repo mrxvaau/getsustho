@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= title ? `${title} - Getsustho HMS` : 'Getsustho HMS' %></title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/">Getsustho HMS</a>
+    <nav>
+      <a href="/#doctors">Doctors</a>
+      <a href="/#hospitals">Hospitals</a>
+      <a href="/blog">Blog</a>
+      <% if (currentUser) { %>
+        <a href="/go">Dashboard</a>
+        <form class="inline" method="post" action="/auth/logout"><button>Logout</button></form>
+      <% } else { %>
+        <a href="/auth/login">Login</a>
+        <a class="pill" href="/auth/register/patient">Register</a>
+      <% } %>
+    </nav>
+  </header>
+
+  <% if (flash.success.length || flash.error.length || flash.info.length) { %>
+    <section class="flash-wrap">
+      <% flash.success.forEach((message) => { %><div class="flash success"><%= message %></div><% }) %>
+      <% flash.error.forEach((message) => { %><div class="flash error"><%= message %></div><% }) %>
+      <% flash.info.forEach((message) => { %><div class="flash info"><%= message %></div><% }) %>
+    </section>
+  <% } %>
+
+  <main>
+    <%- body %>
+  </main>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<section class="hero">
+  <div>
+    <p class="eyebrow">Bangladesh healthcare platform</p>
+    <h1>Smart healthcare management for patients, doctors, and hospitals.</h1>
+    <p>Book appointments, manage care workflows, verify doctors, and keep every operational view in one clean system.</p>
+    <div class="actions">
+      <a class="button" href="/auth/register/patient">Book an Appointment</a>
+      <a class="button secondary" href="#doctors">Find a Doctor</a>
+    </div>
+  </div>
+  <div class="stats">
+    <span><strong><%= doctors.length %></strong> verified doctors</span>
+    <span><strong><%= hospitals.length %></strong> partner hospitals</span>
+    <span><strong>24/7</strong> online access</span>
+  </div>
+</section>
+
+<section id="doctors" class="section">
+  <div class="section-head">
+    <p class="eyebrow">Doctors</p>
+    <h2>Find the right specialist</h2>
+  </div>
+  <div class="grid">
+    <% if (!doctors.length) { %><p class="empty">No doctors registered yet.</p><% } %>
+    <% doctors.forEach((doctor) => { %>
+      <article class="card">
+        <h3><%= doctor.full_name %></h3>
+        <p><%= doctor.specialist %></p>
+        <p>Fee: <%= doctor.appointment_fee || 0 %></p>
+        <a href="/doctor/<%= doctor.doctor_id %>">View profile</a>
+      </article>
+    <% }) %>
+  </div>
+</section>
+
+<section id="hospitals" class="section">
+  <div class="section-head">
+    <p class="eyebrow">Hospitals</p>
+    <h2>Partner hospitals and clinics</h2>
+  </div>
+  <div class="grid">
+    <% if (!hospitals.length) { %><p class="empty">No hospitals registered yet.</p><% } %>
+    <% hospitals.forEach((hospital) => { %>
+      <article class="card">
+        <h3><%= hospital.name %></h3>
+        <p><%= hospital.location %></p>
+        <a href="/hospital/<%= hospital.id %>">View hospital</a>
+      </article>
+    <% }) %>
+  </div>
+</section>
+
+<section id="contact" class="section two-col">
+  <div>
+    <p class="eyebrow">Contact</p>
+    <h2>Get in touch</h2>
+    <p>Questions about partnership, onboarding, or support? Send a message and the team can respond from the admin dashboard.</p>
+  </div>
+  <form class="panel" method="post" action="/contact">
+    <label>Name<input name="name" required></label>
+    <label>Email<input type="email" name="email" required></label>
+    <label>Phone<input name="phone"></label>
+    <label>Message<textarea name="message" rows="5" required></textarea></label>
+    <button class="button">Send Message</button>
+  </form>
+</section>

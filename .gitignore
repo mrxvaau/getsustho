@@ -1,33 +1,6 @@
-# Python
-__pycache__/
-*.py[cod]
-*.pyo
-
-# Virtual environment
-.venv/
-venv/
-env/
-
-# Django database
-db.sqlite3
-*.sqlite3
-
-# Uploaded files
-media/
-
-# Static collected files
-staticfiles/
-
-# Secrets
+node_modules/
 .env
-.env.*
-
-# Mac
 .DS_Store
-
-# IDE
-.vscode/
-.idea/
-
-# Logs
-*.log
+coverage/
+dist/
+npm-debug.log*
