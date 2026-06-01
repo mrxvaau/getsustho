@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}{{ post.title }} — MediCare HMS{% endblock %}
+{% block content %}
+<style>
+body{background:#f1f5f9;padding:28px;}
+.wrap{max-width:700px;margin:0 auto;}
+.card{background:#fff;border-radius:16px;padding:32px;border:1px solid #e2e8f0;}
+.back{display:inline-block;margin-bottom:16px;color:#0ea5e9;font-size:.82rem;font-weight:700;text-decoration:none;}
+.img{width:100%;max-height:320px;object-fit:cover;border-radius:12px;margin-bottom:20px;}
+h1{font-size:1.4rem;font-weight:800;color:#0f172a;margin-bottom:8px;}
+.meta{font-size:.76rem;color:#94a3b8;margin-bottom:20px;}
+.content{font-size:.9rem;color:#334155;line-height:1.8;}
+</style>
+<div class="wrap">
+  <a href="{% url 'blog_list' %}" class="back">← All Posts</a>
+  <div class="card">
+    {% if post.image %}<img src="{{ post.image.url }}" class="img"/>{% endif %}
+    <h1>{{ post.title }}</h1>
+    <div class="meta">By {{ post.author.get_full_name|default:"MediCare Team" }} · {{ post.published_at|date:"d M Y" }}</div>
+    <div class="content">{{ post.content|linebreaks }}</div>
+  </div>
+</div>
+{% endblock %}

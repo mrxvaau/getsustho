@@ -1,0 +1,123 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>{{ hospital.name }} — MediCare HMS</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+<style>
+:root{--blue:#0ea5e9;--indigo:#6366f1;--green:#10b981;--dark:#0f172a;--muted:#64748b;--light:#f1f5f9;--border:#e2e8f0;--white:#fff;}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',sans-serif;}
+body{background:var(--light);}
+.navbar{background:#fff;border-bottom:1px solid var(--border);padding:0 5%;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.nav-logo{font-size:1.1rem;font-weight:800;color:var(--dark);text-decoration:none;}
+.nav-logo span{color:var(--blue);}
+.back-btn{color:var(--blue);text-decoration:none;font-size:.84rem;font-weight:700;}
+.wrap{max-width:1000px;margin:32px auto;padding:0 20px;}
+.cover{height:240px;background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-radius:20px 20px 0 0;overflow:hidden;position:relative;}
+.cover img{width:100%;height:100%;object-fit:cover;}
+.cover-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 40%,rgba(0,0,0,.4));}
+.profile-head{background:#fff;border-radius:0 0 20px 20px;border:1px solid var(--border);border-top:none;padding:24px;display:flex;align-items:flex-end;gap:20px;margin-bottom:20px;position:relative;}
+.hosp-logo{width:80px;height:80px;border-radius:16px;border:4px solid #fff;background:#fff;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:2rem;margin-top:-50px;flex-shrink:0;box-shadow:0 4px 12px rgba(0,0,0,.1);}
+.hosp-logo img{width:100%;height:100%;object-fit:cover;}
+.hosp-name{font-size:1.4rem;font-weight:800;color:var(--dark);}
+.hosp-loc{font-size:.82rem;color:var(--muted);margin-top:4px;}
+.grid{display:grid;grid-template-columns:2fr 1fr;gap:20px;}
+.card{background:#fff;border-radius:16px;border:1px solid var(--border);padding:22px;margin-bottom:20px;}
+.card-title{font-size:.9rem;font-weight:800;color:var(--dark);margin-bottom:14px;}
+.service-tag{display:inline-block;background:var(--light);color:var(--dark);border-radius:20px;padding:5px 13px;font-size:.76rem;font-weight:600;margin:4px;}
+.doc-mini{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--light);text-decoration:none;color:inherit;transition:.15s;}
+.doc-mini:hover{background:#f8fafc;margin:0 -8px;padding:10px 8px;border-radius:8px;}
+.doc-mini:last-child{border-bottom:none;}
+.doc-mini-pic{width:44px;height:44px;border-radius:50%;object-fit:cover;background:linear-gradient(135deg,#dbeafe,#ede9fe);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;}
+.doc-mini-pic img{width:100%;height:100%;border-radius:50%;object-fit:cover;}
+.dm-name{font-weight:700;color:var(--dark);font-size:.85rem;}
+.dm-spec{font-size:.74rem;color:var(--muted);}
+.dm-fee{font-size:.74rem;color:var(--blue);font-weight:700;}
+.book-btn{display:block;width:100%;padding:12px;background:linear-gradient(135deg,var(--blue),var(--indigo));color:#fff;border:none;border-radius:10px;font-size:.88rem;font-weight:700;cursor:pointer;text-align:center;text-decoration:none;margin-top:8px;}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a href="{% url 'landing' %}" class="nav-logo">Medi<span>Care</span> HMS</a>
+  <a href="{% url 'landing' %}" class="back-btn">← Back</a>
+</nav>
+
+<div class="wrap">
+  <!-- Cover + Logo -->
+  <div class="cover">
+    {% if branding and branding.cover_photo %}
+    <img src="{{ branding.cover_photo.url }}" alt="cover"/>
+    {% endif %}
+    <div class="cover-overlay"></div>
+  </div>
+
+  <div class="profile-head">
+    <div class="hosp-logo">
+      {% if branding and branding.logo %}
+      <img src="{{ branding.logo.url }}" alt="logo"/>
+      {% else %}🏥{% endif %}
+    </div>
+    <div>
+      <div class="hosp-name">{{ hospital.name }}</div>
+      <div class="hosp-loc">📍 {{ hospital.location }}
+        {% if hospital.phone %} · 📞 {{ hospital.phone }}{% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div>
+      {% if hospital.description %}
+      <div class="card">
+        <div class="card-title">About</div>
+        <p style="font-size:.85rem;color:var(--muted);line-height:1.7;">{{ hospital.description }}</p>
+      </div>
+      {% endif %}
+
+      {% if hospital.get_services_list %}
+      <div class="card">
+        <div class="card-title">Services</div>
+        {% for s in hospital.get_services_list %}
+        <span class="service-tag">{{ s }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <div class="card">
+        <div class="card-title">Our Doctors ({{ doctors.count }})</div>
+        {% for d in doctors %}
+        <a href="{% url 'doctor_public_profile' d.doctor_id %}" class="doc-mini">
+          <div class="doc-mini-pic">
+            {% if d.profile_picture %}<img src="{{ d.profile_picture.url }}" alt="{{ d }}"/>
+            {% else %}👨‍⚕️{% endif %}
+          </div>
+          <div style="flex:1;">
+            <div class="dm-name">{{ d }}</div>
+            <div class="dm-spec">{{ d.specialist }}</div>
+          </div>
+          <div class="dm-fee">৳{{ d.appointment_fee }}</div>
+        </a>
+        {% empty %}
+        <p style="color:var(--muted);font-size:.82rem;">No doctors listed yet.</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <div class="card-title">Book Appointment</div>
+        <p style="font-size:.8rem;color:var(--muted);margin-bottom:12px;">Select a doctor to book your appointment at {{ hospital.name }}.</p>
+        <a href="{% url 'book_appointment' %}" class="book-btn">📅 Book Now</a>
+        {% if hospital.email %}
+        <p style="font-size:.76rem;color:var(--muted);margin-top:12px;text-align:center;">📧 {{ hospital.email }}</p>
+        {% endif %}
+        {% if hospital.website %}
+        <p style="font-size:.76rem;text-align:center;margin-top:6px;"><a href="{{ hospital.website }}" target="_blank" style="color:var(--blue);font-weight:700;">Visit Website →</a></p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

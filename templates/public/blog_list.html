@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}Blog — MediCare HMS{% endblock %}
+{% block content %}
+<style>
+body{background:#f1f5f9;padding:28px;}
+.wrap{max-width:900px;margin:0 auto;}
+h1{font-size:1.4rem;font-weight:800;color:#0f172a;margin-bottom:6px;}
+.sub{color:#64748b;font-size:.82rem;margin-bottom:24px;}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+.card{background:#fff;border-radius:14px;border:1px solid #e2e8f0;overflow:hidden;text-decoration:none;color:inherit;transition:.2s;}
+.card:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.08);}
+.img{height:150px;background:linear-gradient(135deg,#fef3c7,#fde68a);display:flex;align-items:center;justify-content:center;font-size:3rem;overflow:hidden;}
+.img img{width:100%;height:100%;object-fit:cover;}
+.body{padding:14px;}
+.body h3{font-size:.88rem;font-weight:800;color:#0f172a;margin-bottom:6px;}
+.body p{font-size:.76rem;color:#64748b;line-height:1.5;}
+.date{font-size:.7rem;color:#94a3b8;margin-top:8px;}
+.back{display:inline-block;margin-bottom:16px;color:#0ea5e9;font-size:.82rem;font-weight:700;text-decoration:none;}
+@media(max-width:680px){.grid{grid-template-columns:1fr;}}
+</style>
+<div class="wrap">
+  <a href="{% url 'landing' %}" class="back">← Home</a>
+  <h1>Health Blog</h1>
+  <p class="sub">Tips, news and advice from our medical team.</p>
+  {% if blogs %}
+  <div class="grid">
+    {% for post in blogs %}
+    <a href="{% url 'blog_detail' post.slug %}" class="card">
+      <div class="img">{% if post.image %}<img src="{{ post.image.url }}"/>{% else %}📰{% endif %}</div>
+      <div class="body">
+        <h3>{{ post.title }}</h3>
+        <p>{{ post.excerpt|default:post.content|truncatewords:18 }}</p>
+        <div class="date">{{ post.published_at|date:"d M Y" }}</div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p style="color:#64748b;">No blog posts yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

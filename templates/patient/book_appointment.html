@@ -1,0 +1,580 @@
+{% extends 'base.html' %}
+{% block title %}Book Appointment{% endblock %}
+{% block content %}
+
+<style>
+:root{
+  --blue:#0ea5e9;
+  --indigo:#6366f1;
+  --dark:#0f172a;
+  --muted:#64748b;
+  --light:#f1f5f9;
+  --border:#e2e8f0;
+  --white:#fff;
+}
+
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  font-family:'Segoe UI',sans-serif;
+}
+
+body{
+  background:var(--light);
+  padding:28px;
+}
+
+.wrap{
+  max-width:900px;
+  margin:0 auto;
+}
+
+.back{
+  display:inline-block;
+  margin-bottom:16px;
+  color:var(--blue);
+  font-size:.82rem;
+  font-weight:700;
+  text-decoration:none;
+}
+
+.page-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  flex-wrap:wrap;
+  margin-bottom:18px;
+}
+
+h1{
+  font-size:1.25rem;
+  font-weight:800;
+  color:var(--dark);
+}
+
+.filter-box{
+  background:#fff;
+  border:1.5px solid var(--border);
+  border-radius:16px;
+  padding:16px;
+  margin-bottom:18px;
+  display:grid;
+  grid-template-columns:1fr 1fr auto;
+  gap:12px;
+  align-items:end;
+}
+
+.filter-group label{
+  display:block;
+  font-size:.75rem;
+  font-weight:800;
+  color:#475569;
+  margin-bottom:6px;
+}
+
+.filter-group select{
+  width:100%;
+  padding:10px 12px;
+  border:1.5px solid var(--border);
+  border-radius:10px;
+  outline:none;
+  font-size:.82rem;
+  color:var(--dark);
+  background:#fff;
+}
+
+.filter-group select:focus{
+  border-color:var(--blue);
+}
+
+.reset-filter{
+  padding:10px 16px;
+  border:none;
+  border-radius:10px;
+  background:#f1f5f9;
+  color:#0f172a;
+  font-weight:800;
+  cursor:pointer;
+  font-size:.8rem;
+}
+
+.filter-count{
+  font-size:.78rem;
+  color:var(--muted);
+  font-weight:700;
+  margin-bottom:12px;
+}
+
+.doctor-card{
+  background:var(--white);
+  border-radius:16px;
+  border:1.5px solid var(--border);
+  padding:18px;
+  margin-bottom:14px;
+  cursor:pointer;
+  transition:.2s;
+}
+
+.doctor-card:hover{
+  border-color:var(--blue);
+  background:#eff6ff;
+  transform:translateY(-2px);
+}
+
+.doc-top{
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+
+.doc-av{
+  width:56px;
+  height:56px;
+  border-radius:14px;
+  background:linear-gradient(135deg,#dbeafe,#ede9fe);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:1.6rem;
+  flex-shrink:0;
+  overflow:hidden;
+}
+
+.doc-av img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  border-radius:14px;
+}
+
+.doc-name{
+  font-weight:800;
+  color:var(--dark);
+  font-size:.98rem;
+}
+
+.doc-spec{
+  font-size:.78rem;
+  color:var(--muted);
+  margin-top:2px;
+}
+
+.doc-meta{
+  display:flex;
+  gap:10px;
+  margin-top:12px;
+  flex-wrap:wrap;
+}
+
+.tag{
+  background:var(--light);
+  border-radius:7px;
+  padding:5px 11px;
+  font-size:.74rem;
+  color:var(--dark);
+  font-weight:700;
+}
+
+.fee-tag{
+  background:#dcfce7;
+  color:#166534;
+}
+
+.count-tag{
+  background:#e0f2fe;
+  color:#075985;
+}
+
+.location-tag{
+  background:#ede9fe;
+  color:#5b21b6;
+}
+
+.empty{
+  text-align:center;
+  padding:40px;
+  color:var(--muted);
+}
+
+.no-filter-result{
+  display:none;
+  text-align:center;
+  background:#fff;
+  border:1.5px dashed var(--border);
+  border-radius:16px;
+  padding:40px 18px;
+  color:var(--muted);
+  font-weight:700;
+}
+
+/* Modal */
+.modal-overlay{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(15,23,42,.55);
+  z-index:9999;
+  padding:18px;
+  align-items:center;
+  justify-content:center;
+}
+
+.modal-box{
+  width:100%;
+  max-width:650px;
+  background:#fff;
+  border-radius:18px;
+  padding:22px;
+  max-height:90vh;
+  overflow-y:auto;
+  box-shadow:0 20px 60px rgba(0,0,0,.18);
+}
+
+.modal-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:18px;
+}
+
+.modal-title{
+  font-size:1.05rem;
+  font-weight:800;
+  color:var(--dark);
+}
+
+.close-btn{
+  border:none;
+  background:#fee2e2;
+  color:#991b1b;
+  width:34px;
+  height:34px;
+  border-radius:50%;
+  font-weight:900;
+  cursor:pointer;
+}
+
+.schedule-option{
+  display:block;
+  border:1.5px solid var(--border);
+  border-radius:12px;
+  padding:14px;
+  margin-bottom:10px;
+  cursor:pointer;
+  transition:.2s;
+}
+
+.schedule-option:hover,
+.schedule-option.selected{
+  border-color:var(--blue);
+  background:#eff6ff;
+}
+
+.schedule-option input{
+  display:none;
+}
+
+.schedule-meta{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+label.form-label{
+  font-size:.8rem;
+  font-weight:700;
+  color:#475569;
+  display:block;
+  margin-bottom:5px;
+  margin-top:14px;
+}
+
+textarea{
+  width:100%;
+  padding:10px 13px;
+  border:1.5px solid var(--border);
+  border-radius:9px;
+  font-size:.85rem;
+  outline:none;
+  font-family:inherit;
+  resize:vertical;
+}
+
+textarea:focus{
+  border-color:var(--blue);
+}
+
+.btn{
+  width:100%;
+  padding:12px 28px;
+  background:linear-gradient(135deg,var(--blue),var(--indigo));
+  color:#fff;
+  border:none;
+  border-radius:10px;
+  font-size:.9rem;
+  font-weight:800;
+  cursor:pointer;
+  margin-top:16px;
+}
+
+@media(max-width:700px){
+  body{
+    padding:16px;
+  }
+
+  .wrap{
+    max-width:100%;
+  }
+
+  .filter-box{
+    grid-template-columns:1fr;
+  }
+
+  .doctor-card{
+    padding:15px;
+  }
+
+  .doc-top{
+    align-items:flex-start;
+  }
+
+  .doc-av{
+    width:48px;
+    height:48px;
+  }
+
+  .modal-box{
+    padding:18px;
+    border-radius:15px;
+  }
+
+  .schedule-meta .tag{
+    width:100%;
+    text-align:center;
+  }
+}
+</style>
+
+<div class="wrap">
+  <a href="{% url 'patient_portal' %}" class="back">← Back to Portal</a>
+
+  <div class="page-head">
+    <h1>📅 Book an Appointment</h1>
+  </div>
+
+  {% if schedules %}
+
+    <div class="filter-box">
+      <div class="filter-group">
+        <label>Filter by Specialist</label>
+        <select id="specialistFilter" onchange="filterDoctors()">
+          <option value="">All Specialists</option>
+          {% for sp in all_specialties %}
+            <option value="{{ sp|lower }}">{{ sp }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Filter by Location</label>
+        <select id="locationFilter" onchange="filterDoctors()">
+          <option value="">All Locations</option>
+          {% for loc in all_locations %}
+            <option value="{{ loc|lower }}">{{ loc }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <button type="button" class="reset-filter" onclick="resetFilters()">
+        Reset
+      </button>
+    </div>
+
+    <div class="filter-count">
+      Showing <span id="visibleCount">0</span> doctor(s)
+    </div>
+
+    {% regroup schedules by doctor as doctor_groups %}
+
+    <div id="doctorList">
+      {% for group in doctor_groups %}
+        {% with doctor=group.grouper %}
+          {% with first_schedule=group.list.0 %}
+
+            <div
+              class="doctor-card"
+              data-specialist="{{ doctor.specialist|lower }}"
+              data-location="{% for s in group.list %}{{ s.hospital.location|lower }} {% endfor %}"
+              onclick="openDoctorModal('doctorModal{{ doctor.pk }}')"
+            >
+              <div class="doc-top">
+                <div class="doc-av">
+                  {% if doctor.profile_picture %}
+                    <img src="{{ doctor.profile_picture.url }}" alt="Doctor">
+                  {% else %}
+                    👨‍⚕️
+                  {% endif %}
+                </div>
+
+                <div>
+                  <div class="doc-name">
+                    {{ doctor }} {% if doctor.doctor_id %}({{ doctor.doctor_id }}){% endif %}
+                  </div>
+
+                  <div class="doc-spec">
+                    {{ doctor.specialist }} · {{ first_schedule.hospital.name }}, {{ first_schedule.hospital.location }}
+                  </div>
+                </div>
+              </div>
+
+              <div class="doc-meta">
+                <span class="tag count-tag">
+                  {{ group.list|length }} schedule{{ group.list|length|pluralize }}
+                </span>
+
+                <span class="tag fee-tag">
+                  ৳{{ doctor.appointment_fee }}
+                </span>
+
+                <span class="tag location-tag">
+                  {% for s in group.list %}
+                    {{ s.hospital.location }}{% if not forloop.last %}, {% endif %}
+                  {% endfor %}
+                </span>
+
+                <span class="tag">
+                  Click to view schedules
+                </span>
+              </div>
+            </div>
+
+            <div class="modal-overlay" id="doctorModal{{ doctor.pk }}">
+              <div class="modal-box">
+                <div class="modal-head">
+                  <div>
+                    <div class="modal-title">
+                      {{ doctor }} {% if doctor.doctor_id %}({{ doctor.doctor_id }}){% endif %}
+                    </div>
+                    <div class="doc-spec">{{ doctor.specialist }}</div>
+                  </div>
+
+                  <button type="button" class="close-btn" onclick="closeDoctorModal('doctorModal{{ doctor.pk }}')">
+                    ×
+                  </button>
+                </div>
+
+                <form method="post">
+                  {% csrf_token %}
+
+                  {% for s in group.list %}
+                    <label class="schedule-option" onclick="selectSchedule(this)">
+                      <input type="radio" name="schedule_id" value="{{ s.pk }}" required>
+
+                      <div class="schedule-meta">
+                        <span class="tag">{{ s.hospital.name }}</span>
+                        <span class="tag location-tag">{{ s.hospital.location }}</span>
+                        <span class="tag">{{ s.get_day_display }}</span>
+                        <span class="tag">{{ s.start_time|time:"H:i" }} – {{ s.end_time|time:"H:i" }}</span>
+                        <span class="tag">Max {{ s.max_patients }} patients</span>
+                        <span class="tag fee-tag">৳{{ s.doctor.appointment_fee }}</span>
+                      </div>
+                    </label>
+                  {% endfor %}
+
+                  <label class="form-label">Symptoms / Reason for visit</label>
+                  <textarea name="symptoms" rows="3" placeholder="Describe your symptoms…"></textarea>
+
+                  <button class="btn" type="submit">Book Appointment →</button>
+                </form>
+              </div>
+            </div>
+
+          {% endwith %}
+        {% endwith %}
+      {% endfor %}
+    </div>
+
+    <div class="no-filter-result" id="noFilterResult">
+      No doctors found for the selected specialist/location.
+    </div>
+
+  {% else %}
+    <div class="empty">
+      <div style="font-size:2.5rem;margin-bottom:10px;">📅</div>
+      <p>No doctor schedules available right now.</p>
+    </div>
+  {% endif %}
+</div>
+
+<script>
+function openDoctorModal(id){
+  const modal = document.getElementById(id);
+  if(modal){
+    modal.style.display = 'flex';
+  }
+}
+
+function closeDoctorModal(id){
+  const modal = document.getElementById(id);
+  if(modal){
+    modal.style.display = 'none';
+  }
+}
+
+function selectSchedule(el){
+  const modal = el.closest('.modal-box');
+  modal.querySelectorAll('.schedule-option').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  el.querySelector('input').checked = true;
+}
+
+function filterDoctors(){
+  const specialist = document.getElementById('specialistFilter').value.toLowerCase();
+  const location = document.getElementById('locationFilter').value.toLowerCase();
+
+  let visible = 0;
+
+  document.querySelectorAll('.doctor-card').forEach(card => {
+    const cardSpecialist = card.dataset.specialist || '';
+    const cardLocation = card.dataset.location || '';
+
+    const specialistMatch = !specialist || cardSpecialist.includes(specialist);
+    const locationMatch = !location || cardLocation.includes(location);
+
+    if(specialistMatch && locationMatch){
+      card.style.display = '';
+      visible++;
+    }else{
+      card.style.display = 'none';
+    }
+  });
+
+  document.getElementById('visibleCount').innerText = visible;
+
+  const noResult = document.getElementById('noFilterResult');
+  if(noResult){
+    noResult.style.display = visible === 0 ? 'block' : 'none';
+  }
+}
+
+function resetFilters(){
+  document.getElementById('specialistFilter').value = '';
+  document.getElementById('locationFilter').value = '';
+  filterDoctors();
+}
+
+document.addEventListener('click', function(e){
+  if(e.target.classList.contains('modal-overlay')){
+    e.target.style.display = 'none';
+  }
+});
+
+document.addEventListener('DOMContentLoaded', function(){
+  filterDoctors();
+});
+</script>
+
+{% endblock %}

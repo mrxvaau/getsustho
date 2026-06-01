@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}Hospital Registration{% endblock %}
+{% block content %}
+<style>
+body{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#10b981,#0ea5e9);padding:20px;}
+.card{background:#fff;border-radius:20px;padding:36px;width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,.15);}
+h2{font-size:1.3rem;font-weight:800;color:#0f172a;margin-bottom:4px;}
+.sub{color:#64748b;font-size:.82rem;margin-bottom:22px;}
+label{font-size:.78rem;font-weight:700;color:#475569;display:block;margin-bottom:4px;}
+input{width:100%;padding:9px 13px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:.86rem;outline:none;margin-bottom:12px;}
+input:focus{border-color:#0ea5e9;}
+.btn{width:100%;padding:12px;background:linear-gradient(135deg,#10b981,#0ea5e9);color:#fff;border:none;border-radius:10px;font-size:.92rem;font-weight:700;cursor:pointer;}
+.back{text-align:center;margin-top:12px;font-size:.82rem;color:#64748b;}
+.back a{color:#0ea5e9;font-weight:700;text-decoration:none;}
+.err{color:#dc2626;font-size:.76rem;margin-bottom:10px;}
+</style>
+<div class="card">
+  <h2>🏥 Hospital Registration</h2>
+  <p class="sub">Register your hospital on MediCare HMS.</p>
+  <form method="post">
+    {% csrf_token %}
+    <label>Admin Username *</label>{{ form.username }}
+    <label>Your Name *</label>{{ form.first_name }}
+    <label>Email *</label>{{ form.email }}
+    <label>Phone *</label>{{ form.phone }}
+    <label>Hospital Name *</label>{{ form.hospital_name }}
+    <label>City / Location *</label>{{ form.location }}
+    <label>Password *</label>{{ form.password1 }}
+    <label>Confirm Password *</label>{{ form.password2 }}
+    {% if form.errors %}<div class="err">{{ form.errors }}</div>{% endif %}
+    <button class="btn" type="submit">Register Hospital</button>
+  </form>
+  <div class="back"><a href="{% url 'landing' %}">← Back to Home</a> · <a href="{% url 'login' %}">Login</a></div>
+</div>
+{% endblock %}

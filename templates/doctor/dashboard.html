@@ -1,0 +1,335 @@
+{% extends 'base.html' %}
+{% block title %}Doctor Dashboard{% endblock %}
+{% block content %}
+<style>
+:root{--blue:#0ea5e9;--indigo:#6366f1;--green:#10b981;--red:#ef4444;--yellow:#f59e0b;
+      --dark:#0f172a;--muted:#64748b;--light:#f1f5f9;--border:#e2e8f0;--white:#fff;}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',sans-serif;}
+body{background:var(--light);}
+.wrap{max-width:1050px;margin:0 auto;padding:28px;}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
+.topbar h1{font-size:1.3rem;font-weight:800;color:var(--dark);}
+.topbar p{font-size:.8rem;color:var(--muted);margin-top:3px;}
+.top-links{display:flex;gap:10px;}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+.stat{background:var(--white);border-radius:14px;padding:18px;border:1px solid var(--border);}
+.stat-icon{font-size:1.3rem;margin-bottom:8px;}
+.stat-val{font-size:1.7rem;font-weight:800;color:var(--dark);}
+.stat-lbl{font-size:.72rem;color:var(--muted);margin-top:3px;}
+.card{background:var(--white);border-radius:14px;border:1px solid var(--border);padding:20px;margin-bottom:18px;}
+.card-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.card-title{font-size:.92rem;font-weight:800;color:var(--dark);}
+table{width:100%;border-collapse:collapse;font-size:.78rem;}
+thead th{background:var(--light);padding:8px 12px;text-align:left;font-weight:700;color:var(--muted);}
+tbody td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover{background:#f8fafc;}
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:.68rem;font-weight:700;}
+.b-pending{background:#fef9c3;color:#a16207;} .b-confirmed{background:#dbeafe;color:#1e40af;}
+.b-completed{background:#dcfce7;color:#166534;} .b-cancelled{background:#fee2e2;color:#991b1b;}
+.b-incomplete{background:#fce7f3;color:#9d174d;}
+.b-active{background:#dcfce7;color:#166534;} .b-leave_requested{background:#fef9c3;color:#a16207;}
+.b-left{background:#fee2e2;color:#991b1b;}
+.serial{background:var(--indigo);color:#fff;border-radius:8px;padding:3px 9px;font-weight:700;font-size:.74rem;display:inline-block;}
+.btn{padding:9px 18px;border:none;border-radius:9px;font-size:.8rem;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block;}
+.btn-blue{background:linear-gradient(135deg,var(--blue),var(--indigo));color:#fff;}
+.btn-sm{padding:5px 12px;border:none;border-radius:7px;font-size:.72rem;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block;}
+.symptoms-cell{max-width:180px;font-size:.74rem;color:var(--muted);}
+.empty{color:var(--muted);font-size:.82rem;padding:10px 0;}
+input[type=text],input[type=date],input[type=number],select,textarea{padding:7px 11px;border:1.5px solid var(--border);border-radius:8px;font-size:.8rem;outline:none;font-family:inherit;}
+input:focus,select:focus{border-color:var(--blue);}
+.alert{border-radius:12px;padding:12px 16px;margin-bottom:10px;font-size:.82rem;}
+.alert-yellow{background:#fef9c3;border:1px solid #fde68a;color:#92400e;}
+.alert-green{background:#dcfce7;border:1px solid #86efac;color:#166534;}
+.alert-red{background:#fee2e2;border:1px solid #fca5a5;color:#991b1b;}
+</style>
+
+<div class="wrap">
+  <div class="topbar">
+    <div>
+      <h1>{{ doctor }}</h1>
+      <p>{{ doctor.specialist }} · {{ doctor.doctor_id }} · {{ today }}</p>
+    </div>
+    <div class="top-links">
+      <a href="{% url 'doctor_settings' %}" class="btn btn-blue" style="font-size:.78rem;">⚙️ Settings</a>
+      <a href="{% url 'book_appointment' %}" class="btn" style="background:#dcfce7;color:#166534;font-size:.78rem;">📅 Book Appointment</a>
+      <a href="{% url 'logout' %}" style="color:var(--muted);font-size:.8rem;text-decoration:none;padding:9px 0;">Logout →</a>
+    </div>
+  </div>
+
+  <!-- Verification alert -->
+  {% if verification %}
+  {% if verification.status == 'PENDING' %}
+  <div class="alert alert-yellow">⏳ Your account is pending verification. You will be notified once approved.</div>
+  {% elif verification.status == 'REJECTED' %}
+  <div class="alert alert-red">❌ Verification rejected. Reason: {{ verification.rejection_reason }}</div>
+  {% endif %}
+  {% endif %}
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat"><div class="stat-icon">🆔</div><div class="stat-val" style="font-size:1rem;">{{ doctor.doctor_id }}</div><div class="stat-lbl">Doctor ID</div></div>
+    <div class="stat"><div class="stat-icon">📋</div><div class="stat-val">{{ today_appointments.count }}</div><div class="stat-lbl">Today's Patients</div></div>
+    <div class="stat"><div class="stat-icon">✅</div><div class="stat-val">{{ completed_count }}</div><div class="stat-lbl">Total Completed</div></div>
+    <div class="stat"><div class="stat-icon">📅</div><div class="stat-val">{{ upcoming.count }}</div><div class="stat-lbl">Upcoming</div></div>
+  </div>
+
+  <!-- Earnings tracker -->
+  {% if earnings_by_hospital %}
+  <div class="card">
+    <div class="card-title">💰 Patient & Earnings Tracker</div><br/>
+    <table>
+      <thead><tr><th>Hospital</th><th>Completed Patients</th></tr></thead>
+      <tbody>
+      {% for e in earnings_by_hospital %}
+      <tr>
+        <td style="font-weight:700;">{{ e.hospital.name }}<br/><span style="font-size:.7rem;color:var(--muted);">{{ e.hospital.location }}</span></td>
+        <td><span style="font-size:1.1rem;font-weight:800;">{{ e.completed_patients }}</span> patients</td>
+      </tr>
+      {% endfor %}
+      <tr style="background:var(--light);font-weight:800;">
+        <td>Total</td>
+        <td>{{ completed_count }} patients</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  <!-- Today's Queue -->
+  <div class="card">
+    <div class="card-title">📋 Today's Queue — {{ today }}</div>
+    {% if today_appointments %}
+    <table>
+      <thead><tr><th>Serial</th><th>Patient</th><th>Phone</th><th>Blood</th><th>Symptoms</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody>
+      {% for a in today_appointments %}
+      <tr>
+        <td><span class="serial">{{ a.serial_number }}</span></td>
+        <td>
+          <div style="font-weight:700;">{{ a.patient.user.get_full_name|default:a.patient.user.username }}</div>
+          <div style="font-size:.7rem;color:var(--muted);">{{ a.patient.patient_id }} · Age {{ a.patient.age|default:"—" }}</div>
+        </td>
+        <td style="color:var(--muted);">{{ a.patient.user.phone|default:"—" }}</td>
+        <td>{% if a.patient.blood_group %}<span class="badge" style="background:#fee2e2;color:#991b1b;">{{ a.patient.blood_group }}</span>{% else %}—{% endif %}</td>
+        <td class="symptoms-cell">{{ a.symptoms|default:"—" }}</td>
+        <td><span class="badge b-{{ a.status|lower }}">{{ a.status }}</span></td>
+        <td>
+          {% if a.status == 'PENDING' or a.status == 'CONFIRMED' %}
+          <form method="post" action="{% url 'doctor_complete_appointment' a.pk %}" style="display:inline;">
+            {% csrf_token %}
+            <button class="btn-sm" style="background:#dcfce7;color:#166534;">✓ Complete & Prescribe</button>
+          </form>
+          {% elif a.status == 'COMPLETED' %}
+          <a href="{% url 'doctor_write_prescription' a.pk %}" class="btn-sm" style="background:#dbeafe;color:#1e40af;">
+            {% if a.prescription %}✏️ Edit Rx{% else %}✍️ Write Rx{% endif %}
+          </a>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="empty">No patients scheduled for today.</p>
+    {% endif %}
+  </div>
+
+  <!-- OT Refer -->
+  {% if today_appointments %}
+  <div class="card">
+    <div class="card-title">🔪 Refer Patient for OT</div>
+    <table>
+      <thead><tr><th>Patient</th><th>Serial</th><th>Status</th><th>Refer OT</th></tr></thead>
+      <tbody>
+      {% for a in today_appointments %}{% if a.status != 'CANCELLED' %}
+      <tr>
+        <td style="font-weight:700;">{{ a.patient.user.get_full_name|default:a.patient.user.username }}</td>
+        <td><span class="serial">{{ a.serial_number }}</span></td>
+        <td><span class="badge b-{{ a.status|lower }}">{{ a.status }}</span></td>
+        <td>
+          <form method="post" action="{% url 'doctor_refer_ot' a.pk %}" style="display:flex;gap:8px;align-items:center;">
+            {% csrf_token %}
+            <input type="text" name="reason" placeholder="Reason for OT referral…" style="flex:1;min-width:160px;"/>
+            <button class="btn-sm" style="background:#fef9c3;color:#a16207;">Refer OT</button>
+          </form>
+        </td>
+      </tr>
+      {% endif %}{% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  <!-- Upcoming -->
+  <div class="card">
+    <div class="card-title">📆 Upcoming Appointments</div>
+    {% if upcoming %}
+    <table>
+      <thead><tr><th>Serial</th><th>Patient</th><th>Symptoms</th><th>Date</th><th>Hospital</th><th>Status</th></tr></thead>
+      <tbody>
+      {% for a in upcoming %}
+      <tr>
+        <td><span class="serial">{{ a.serial_number }}</span></td>
+        <td style="font-weight:700;">{{ a.patient.user.get_full_name|default:a.patient.user.username }}</td>
+        <td class="symptoms-cell">{{ a.symptoms|default:"—"|truncatewords:8 }}</td>
+        <td>{{ a.appointment_date }}</td>
+        <td style="color:var(--muted);">{{ a.hospital.name }}</td>
+        <td><span class="badge b-{{ a.status|lower }}">{{ a.status }}</span></td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="empty">No upcoming appointments.</p>
+    {% endif %}
+  </div>
+
+  <!-- Completed -->
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-title">✅ Completed Appointments</div>
+      <span style="font-size:.75rem;color:var(--muted);">Total: {{ completed_count }}</span>
+    </div>
+    {% if completed_appointments %}
+    <table>
+      <thead><tr><th>Patient</th><th>Date</th><th>Hospital</th><th>Prescription</th></tr></thead>
+      <tbody>
+      {% for a in completed_appointments %}
+      <tr>
+        <td style="font-weight:700;">{{ a.patient.user.get_full_name|default:a.patient.user.username }}<br/><span style="font-size:.7rem;color:var(--muted);">{{ a.patient.patient_id }}</span></td>
+        <td>{{ a.appointment_date }}</td>
+        <td style="color:var(--muted);">{{ a.hospital.name }}</td>
+        <td>
+          <a href="{% url 'doctor_write_prescription' a.pk %}" class="btn-sm" style="background:#dbeafe;color:#1e40af;">
+            {% if a.prescription %}✏️ Edit Rx{% else %}✍️ Write Rx{% endif %}
+          </a>
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="empty">No completed appointments yet.</p>
+    {% endif %}
+  </div>
+
+  <!-- OT Bookings -->
+  {% if ot_bookings %}
+  <div class="card">
+    <div class="card-title">🔪 My OT Bookings</div>
+    <table>
+      <thead><tr><th>Patient</th><th>Operation</th><th>Date</th><th>OT</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody>
+      {% for ot in ot_bookings %}
+      <tr>
+        <td style="font-weight:700;">{{ ot.patient }}</td>
+        <td>{{ ot.operation_type }}</td>
+        <td>{{ ot.operation_date }}</td>
+        <td style="color:var(--muted);">{{ ot.ot.name }}</td>
+        <td><span class="badge b-{{ ot.status|lower }}">{{ ot.status }}</span></td>
+        <td>
+          {% if ot.status == 'SCHEDULED' %}
+          <button onclick="document.getElementById('pp-{{ ot.pk }}').style.display='block'" class="btn-sm" style="background:#fef9c3;color:#a16207;">Postpone</button>
+          <div id="pp-{{ ot.pk }}" style="display:none;margin-top:8px;">
+            <form method="post" action="{% url 'doctor_postpone_ot' ot.pk %}" style="display:flex;gap:8px;flex-wrap:wrap;">
+              {% csrf_token %}
+              <input type="date" name="next_date" required/>
+              <input type="text" name="reason" placeholder="Reason…" style="flex:1;min-width:120px;"/>
+              <button class="btn-sm" style="background:var(--blue);color:#fff;">Confirm</button>
+            </form>
+          </div>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  <!-- Hospital Memberships -->
+  <div class="card">
+    <div class="card-title">🏥 My Hospital Memberships</div>
+    {% if memberships %}
+    <table>
+      <thead><tr><th>Hospital</th><th>Location</th><th>Joined</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody>
+      {% for m in memberships %}
+      <tr>
+        <td style="font-weight:700;">{{ m.hospital.name }}</td>
+        <td style="color:var(--muted);">{{ m.hospital.location }}</td>
+        <td style="color:var(--muted);">{{ m.joined_at|date:"d M Y" }}</td>
+        <td><span class="badge b-{{ m.status|lower }}">{{ m.get_status_display }}</span></td>
+        <td>
+          {% if m.status == 'ACTIVE' %}
+          <button onclick="document.getElementById('lr-{{ m.pk }}').style.display='block'" class="btn-sm" style="background:#fee2e2;color:#dc2626;">Request Leave</button>
+          <div id="lr-{{ m.pk }}" style="display:none;margin-top:8px;">
+            <form method="post" action="{% url 'doctor_request_leave' m.pk %}" style="display:flex;gap:8px;align-items:center;">
+              {% csrf_token %}
+              <input type="text" name="reason" placeholder="Reason (optional)" style="flex:1;min-width:160px;"/>
+              <button class="btn-sm" style="background:#dc2626;color:#fff;">Send Request</button>
+            </form>
+          </div>
+          {% elif m.status == 'LEAVE_REQUESTED' %}
+          <span style="font-size:.74rem;color:var(--yellow);">⏳ Awaiting admin approval</span>
+          {% elif m.status == 'LEFT' %}
+          <span style="font-size:.74rem;color:var(--muted);">Left on {{ m.left_at|date:"d M Y" }}</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="empty">No hospital memberships yet.</p>
+    {% endif %}
+  </div>
+
+  <!-- Join Hospital -->
+  <div class="card">
+    <div class="card-title">➕ Request to Join a Hospital</div>
+    <form method="post" action="{% url 'doctor_send_join_request' %}" style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-top:8px;">
+      {% csrf_token %}
+      <div><label style="font-size:.76rem;font-weight:700;color:var(--muted);display:block;margin-bottom:4px;">Hospital ID</label>
+        <input type="number" name="hospital_id" placeholder="e.g. 3" style="width:130px;"/></div>
+      <div style="flex:1;min-width:200px;"><label style="font-size:.76rem;font-weight:700;color:var(--muted);display:block;margin-bottom:4px;">Message (optional)</label>
+        <input type="text" name="message" placeholder="Why you want to join…" style="width:100%;"/></div>
+      <button class="btn btn-blue">Send Request</button>
+    </form>
+    {% if pending_join_requests %}
+    <div style="margin-top:14px;">
+      {% for jr in pending_join_requests %}
+      <div class="alert alert-yellow">⏳ Waiting for <strong>{{ jr.hospital.name }}</strong> to accept your request.</div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Schedules -->
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-title">🗓️ My Schedules</div>
+      <span style="font-size:.74rem;color:var(--muted);">Set by hospital admin</span>
+    </div>
+    {% if schedules %}
+    <table>
+      <thead><tr><th>Hospital</th><th>Day</th><th>Time</th><th>Max Patients</th><th>Active</th></tr></thead>
+      <tbody>
+      {% for s in schedules %}
+      <tr>
+        <td style="font-weight:700;">{{ s.hospital.name }}</td>
+        <td>{{ s.get_day_display }}</td>
+        <td>{{ s.start_time|time:"H:i" }} – {{ s.end_time|time:"H:i" }}</td>
+        <td>{{ s.max_patients }}</td>
+        <td>{% if s.is_active %}<span class="badge b-completed">Active</span>{% else %}<span class="badge b-cancelled">Inactive</span>{% endif %}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="empty">No schedules assigned. Contact your hospital admin.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}Doctor Registration{% endblock %}
+{% block content %}
+<style>
+body{background:linear-gradient(135deg,#0ea5e9,#6366f1);min-height:100vh;padding:28px 20px;display:flex;align-items:flex-start;justify-content:center;}
+.card{background:#fff;border-radius:20px;padding:36px;width:100%;max-width:600px;box-shadow:0 20px 60px rgba(0,0,0,.15);}
+h2{font-size:1.3rem;font-weight:800;color:#0f172a;margin-bottom:4px;}
+.sub{color:#64748b;font-size:.8rem;margin-bottom:22px;}
+.sec{font-size:.72rem;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #e2e8f0;padding-bottom:6px;margin:16px 0 10px;}
+label{font-size:.78rem;font-weight:700;color:#475569;display:block;margin-bottom:4px;}
+input,select,textarea{width:100%;padding:9px 13px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:.85rem;outline:none;margin-bottom:12px;font-family:inherit;}
+input:focus,select:focus{border-color:#0ea5e9;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.btn{width:100%;padding:12px;background:linear-gradient(135deg,#0ea5e9,#6366f1);color:#fff;border:none;border-radius:10px;font-size:.92rem;font-weight:700;cursor:pointer;margin-top:6px;}
+.back{text-align:center;margin-top:12px;font-size:.82rem;color:#64748b;}
+.back a{color:#0ea5e9;font-weight:700;text-decoration:none;}
+.info{background:#dbeafe;border-radius:9px;padding:10px 14px;font-size:.78rem;color:#1e40af;margin-bottom:18px;}
+.doc-note{background:#fef9c3;border-radius:8px;padding:8px 12px;font-size:.74rem;color:#a16207;margin-bottom:10px;}
+.err{color:#dc2626;font-size:.76rem;margin-bottom:10px;}
+</style>
+<div class="card">
+  <h2>👨‍⚕️ Doctor Registration</h2>
+  <p class="sub">Register and get verified to start accepting patients.</p>
+  <div class="info">ℹ️ Your account will be reviewed by our admin team before activation. You'll be notified by email.</div>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {% if form.errors %}<div class="err">Please fix the errors below.</div>{% endif %}
+    <div class="sec">Personal Information</div>
+    <div class="row2">
+      <div><label>First Name *</label>{{ form.first_name }}</div>
+      <div><label>Last Name</label>{{ form.last_name }}</div>
+    </div>
+    <label>Username *</label>{{ form.username }}
+    <label>Email *</label>{{ form.email }}
+    <label>Phone *</label>{{ form.phone }}
+    <label>Password *</label>{{ form.password1 }}
+    <label>Confirm Password *</label>{{ form.password2 }}
+    <div class="sec">Professional Information</div>
+    <label>Specialty *</label>{{ form.specialist }}
+    <label>Appointment Fee (৳)</label>{{ form.appointment_fee }}
+    <label>Workplace / Chamber Address *</label>{{ form.workplace }}
+    <label>Bio</label>{{ form.bio }}
+    <div class="sec">Profile & Documents</div>
+    <label>Profile Picture *</label>{{ form.profile_picture }}
+    <label>Medical License Number *</label>{{ form.license_number }}
+    <div class="doc-note">Upload clear, readable photos of your documents.</div>
+    <label>Degree Certificate Photo *</label>{{ form.degree_certificate }}
+    <label>National ID / Passport Photo *</label>{{ form.national_id_photo }}
+    <button class="btn" type="submit">Submit for Verification →</button>
+  </form>
+  <div class="back"><a href="{% url 'landing' %}">← Back to Home</a> · <a href="{% url 'login' %}">Login</a></div>
+</div>
+{% endblock %}

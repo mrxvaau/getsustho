@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block title %}Login — MediCare HMS{% endblock %}
+{% block content %}
+<style>
+body{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#0ea5e9,#6366f1);}
+.card{background:#fff;border-radius:20px;padding:40px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.15);}
+.logo{text-align:center;margin-bottom:28px;}
+.logo h1{font-size:1.6rem;font-weight:800;color:#0f172a;}
+.logo h1 span{color:#0ea5e9;}
+.logo p{color:#64748b;font-size:.85rem;margin-top:4px;}
+label{font-size:.82rem;font-weight:700;color:#475569;display:block;margin-bottom:4px;}
+input{width:100%;padding:11px 14px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:.9rem;outline:none;margin-bottom:16px;transition:border-color .2s;}
+input:focus{border-color:#0ea5e9;}
+.btn{width:100%;padding:12px;background:linear-gradient(135deg,#0ea5e9,#6366f1);color:#fff;border:none;border-radius:10px;font-size:.95rem;font-weight:700;cursor:pointer;}
+.divider{display:flex;align-items:center;gap:10px;margin:18px 0;}
+.divider span{font-size:.75rem;color:#94a3b8;font-weight:600;white-space:nowrap;}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:#e2e8f0;}
+.oauth-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:11px;border:1.5px solid #e2e8f0;border-radius:10px;text-decoration:none;color:#334155;font-size:.88rem;font-weight:700;margin-bottom:10px;background:#fff;transition:border-color .2s;}
+.oauth-btn:hover{border-color:#0ea5e9;}
+.oauth-fb{background:#1877F2;color:#fff;border-color:#1877F2;}
+.oauth-fb:hover{background:#166FE5;border-color:#166FE5;}
+.links{text-align:center;margin-top:18px;font-size:.82rem;color:#64748b;}
+.links a{color:#0ea5e9;font-weight:700;text-decoration:none;margin:0 5px;}
+.forgot{text-align:right;margin-top:-12px;margin-bottom:14px;}
+.forgot a{font-size:.78rem;color:#0ea5e9;font-weight:700;text-decoration:none;}
+</style>
+<div class="card">
+  <div class="logo">
+    <h1>Medi<span>Care</span> HMS</h1>
+    <p>Hospital Management System</p>
+  </div>
+  <form method="post">
+    {% csrf_token %}
+    <label>Username or Email</label>
+    <input type="text" name="username" required autofocus/>
+    <label>Password</label>
+    <input type="password" name="password" required/>
+    <div class="forgot"><a href="{% url 'forgot_password' %}">Forgot password?</a></div>
+    <button class="btn" type="submit">Sign In</button>
+  </form>
+
+  <div class="divider"><span>or continue with</span></div>
+
+  <a href="{% url 'socialaccount_signup' %}?provider=google" class="oauth-btn">
+    <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0S12.1 2.38 8.94 6.25l7.98 6.19C18.43 8.72 20.9 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+    Continue with Google
+  </a>
+  <a href="{% url 'socialaccount_signup' %}?provider=facebook" class="oauth-btn oauth-fb">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg>
+    Continue with Facebook
+  </a>
+
+  <div class="links">
+    Patient? <a href="{% url 'patient_register' %}">Register</a> ·
+    Doctor? <a href="{% url 'doctor_self_register' %}">Register</a> ·
+    Hospital? <a href="{% url 'hospital_register' %}">Register</a>
+  </div>
+</div>
+{% endblock %}

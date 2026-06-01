@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}Doctor Schedules{% endblock %}
+{% block content %}
+<style>
+body{background:#f1f5f9;padding:28px;font-family:'Segoe UI',sans-serif;}
+.wrap{max-width:700px;margin:0 auto;}
+.card{background:#fff;border-radius:14px;padding:22px;border:1px solid #e2e8f0;margin-bottom:16px;}
+h2{font-size:1rem;font-weight:800;color:#0f172a;margin-bottom:14px;}
+.back{display:inline-block;margin-bottom:14px;color:#0ea5e9;font-size:.8rem;font-weight:700;text-decoration:none;}
+.info{background:#dbeafe;border-radius:9px;padding:10px 14px;font-size:.78rem;color:#1e40af;}
+</style>
+<div class="wrap">
+  <a href="{% url 'doctor_dashboard' %}" class="back">← Dashboard</a>
+  <div class="card">
+    <h2>My Schedules</h2>
+    <div class="info">ℹ️ Your schedules are managed by your hospital admin. Contact them to add or update your schedule.</div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,278 @@
+{% extends 'base.html' %}
+{% block title %}Hospital Dashboard — {{ hospital.name }}{% endblock %}
+{% block content %}
+<style>
+:root{--blue:#0ea5e9;--indigo:#6366f1;--green:#10b981;--yellow:#f59e0b;--red:#ef4444;
+      --dark:#0f172a;--dark2:#1e293b;--muted:#64748b;--light:#f1f5f9;--border:#e2e8f0;--white:#fff;}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',sans-serif;}
+body{display:flex;min-height:100vh;background:var(--light);}
+.sidebar{width:240px;background:var(--dark);min-height:100vh;position:fixed;top:0;left:0;display:flex;flex-direction:column;z-index:100;}
+.s-logo{padding:18px 20px;border-bottom:1px solid rgba(255,255,255,.07);}
+.s-logo-img{width:40px;height:40px;border-radius:10px;object-fit:cover;margin-bottom:6px;display:block;}
+.s-logo h2{color:#fff;font-size:1rem;font-weight:800;}
+.s-logo h2 span{color:var(--blue);}
+.s-logo p{color:#94a3b8;font-size:.7rem;margin-top:2px;}
+.s-nav{padding:12px 0;flex:1;overflow-y:auto;}
+.s-nav a{display:flex;align-items:center;gap:10px;padding:9px 18px;color:#94a3b8;text-decoration:none;font-size:.8rem;font-weight:600;transition:.15s;}
+.s-nav a:hover{background:rgba(255,255,255,.07);color:#fff;}
+.s-nav a i{width:15px;text-align:center;}
+.s-section{padding:6px 18px 3px;font-size:.63rem;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:.05em;margin-top:6px;}
+.s-footer{padding:14px 18px;border-top:1px solid rgba(255,255,255,.07);}
+.s-footer a{color:#64748b;font-size:.76rem;text-decoration:none;}
+.s-footer a:hover{color:#fff;}
+.main{margin-left:240px;flex:1;padding:26px;}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;}
+.topbar h1{font-size:1.2rem;font-weight:800;color:var(--dark);}
+.topbar p{color:var(--muted);font-size:.8rem;margin-top:2px;}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+.stat{background:var(--white);border-radius:14px;padding:18px;border:1px solid var(--border);}
+.stat-icon{font-size:1.3rem;margin-bottom:6px;}
+.stat-val{font-size:1.7rem;font-weight:800;color:var(--dark);}
+.stat-lbl{font-size:.72rem;color:var(--muted);margin-top:3px;}
+.card{background:var(--white);border-radius:14px;border:1px solid var(--border);padding:20px;margin-bottom:18px;}
+.card-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.card-title{font-size:.9rem;font-weight:800;color:var(--dark);}
+table{width:100%;border-collapse:collapse;font-size:.78rem;}
+thead th{background:var(--light);padding:8px 12px;text-align:left;font-weight:700;color:var(--muted);white-space:nowrap;}
+tbody td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover{background:#f8fafc;}
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:.68rem;font-weight:700;}
+.b-pending{background:#fef9c3;color:#a16207;} .b-confirmed{background:#dbeafe;color:#1e40af;}
+.b-completed{background:#dcfce7;color:#166534;} .b-cancelled{background:#fee2e2;color:#991b1b;}
+.b-active{background:#dcfce7;color:#166534;} .b-leave_requested{background:#fef9c3;color:#a16207;} .b-left{background:#fee2e2;color:#991b1b;}
+.btn{padding:7px 14px;border:none;border-radius:8px;font-size:.76rem;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block;}
+.btn-blue{background:linear-gradient(135deg,var(--blue),var(--indigo));color:#fff;}
+.btn-green{background:#dcfce7;color:#166534;}
+.btn-red{background:#fee2e2;color:#dc2626;}
+.doc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.doc-card{background:var(--white);border-radius:14px;border:1.5px solid var(--border);padding:16px;transition:.2s;}
+.doc-card:hover{border-color:var(--blue);}
+.doc-pic{width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid var(--border);margin-bottom:8px;}
+.doc-pic-ph{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#dbeafe,#ede9fe);display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin-bottom:8px;}
+.alert{border-radius:12px;padding:12px 16px;margin-bottom:12px;font-size:.82rem;}
+.alert-yellow{background:#fef9c3;border:1px solid #fde68a;color:#92400e;}
+.alert-blue{background:#dbeafe;border:1px solid #93c5fd;color:#1e40af;}
+.empty{text-align:center;padding:24px;color:var(--muted);font-size:.82rem;}
+.upcoming-badge{background:#dbeafe;color:#1e40af;border-radius:8px;padding:3px 9px;font-size:.68rem;font-weight:700;}
+.no-appt{background:var(--light);color:var(--muted);border-radius:8px;padding:3px 9px;font-size:.68rem;font-weight:700;}
+</style>
+
+<div class="sidebar">
+  <div class="s-logo">
+    {% if branding and branding.logo %}
+    <img src="{{ branding.logo.url }}" class="s-logo-img"/>
+    {% endif %}
+    <h2>Medi<span>Care</span></h2>
+    <p>🏥 {{ hospital.name }}</p>
+  </div>
+  <nav class="s-nav">
+    <div class="s-section">Overview</div>
+    <a href="#overview"><i class="fas fa-th-large"></i> Dashboard</a>
+    <a href="#appointments"><i class="fas fa-calendar-check"></i> Appointments</a>
+    <a href="#completed"><i class="fas fa-check-circle"></i> Completed</a>
+    <a href="#patients"><i class="fas fa-users"></i> Patients</a>
+    <div class="s-section">Manage</div>
+    <a href="#doctors"><i class="fas fa-user-md"></i> Doctors</a>
+    <a href="{% url 'hospital_register_doctor' %}"><i class="fas fa-user-plus"></i> Register Doctor</a>
+    <a href="{% url 'hospital_create_staff' %}"><i class="fas fa-user-tie"></i> Create Staff</a>
+    <a href="{% url 'hospital_manage_schedules' %}"><i class="fas fa-clock"></i> Schedules</a>
+    <a href="{% url 'hospital_manage_beds' %}"><i class="fas fa-bed"></i> Beds</a>
+    <a href="{% url 'hospital_manage_ot' %}"><i class="fas fa-procedures"></i> OT</a>
+    <a href="{% url 'hospital_update_branding' %}"><i class="fas fa-image"></i> Profile & Branding</a>
+    <div class="s-section">Requests</div>
+    <a href="#requests"><i class="fas fa-bell"></i> Requests
+      {% if leave_requests.count or join_requests.count %}<span style="background:var(--red);color:#fff;border-radius:20px;padding:1px 7px;font-size:.62rem;margin-left:4px;">{{ leave_requests.count|add:join_requests.count }}</span>{% endif %}
+    </a>
+  </nav>
+  <div class="s-footer"><a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a></div>
+</div>
+
+<div class="main">
+  <!-- Cover photo -->
+  {% if branding and branding.cover_photo %}
+  <div style="width:100%;height:160px;border-radius:14px;overflow:hidden;margin-bottom:20px;background:#e2e8f0;">
+    <img src="{{ branding.cover_photo.url }}" style="width:100%;height:100%;object-fit:cover;"/>
+  </div>
+  {% endif %}
+
+  <div class="topbar" id="overview">
+    <div>
+      <h1>{{ hospital.name }}</h1>
+      <p>📍 {{ hospital.location }} &nbsp;·&nbsp; Hospital Admin Dashboard</p>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <a href="{% url 'hospital_register_doctor' %}" class="btn btn-blue"><i class="fas fa-user-plus"></i> Register Doctor</a>
+      <a href="{% url 'hospital_create_staff' %}" class="btn" style="background:#dcfce7;color:#166534;">+ Staff</a>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-icon">👨‍⚕️</div><div class="stat-val">{{ doctors.count }}</div><div class="stat-lbl">Active Doctors</div></div>
+    <div class="stat"><div class="stat-icon">👥</div><div class="stat-val">{{ patients|length }}</div><div class="stat-lbl">Total Patients</div></div>
+    <div class="stat"><div class="stat-icon">📋</div><div class="stat-val">{{ pending_apps }}</div><div class="stat-lbl">Pending Appointments</div></div>
+    <div class="stat"><div class="stat-icon">🛏️</div><div class="stat-val">{{ available_beds }}/{{ total_beds }}</div><div class="stat-lbl">Available Beds</div></div>
+  </div>
+
+  <!-- Requests -->
+  {% if leave_requests or join_requests %}
+  <div class="card" id="requests">
+    <div class="card-title">🔔 Pending Requests</div><br/>
+    {% for lr in leave_requests %}
+    <div class="alert alert-yellow"><strong>{{ lr.doctor }}</strong> requested to leave.{% if lr.reason %} "{{ lr.reason }}"{% endif %}
+      <form method="post" action="{% url 'hospital_accept_leave' lr.pk %}" style="display:inline;margin-left:10px;">{% csrf_token %}<button class="btn btn-red" style="font-size:.7rem;">Accept Leave</button></form>
+    </div>{% endfor %}
+    {% for jr in join_requests %}
+    <div class="alert alert-blue"><strong>{{ jr.doctor }}</strong> ({{ jr.doctor.doctor_id }}) wants to join.
+      <form method="post" action="{% url 'hospital_accept_join' jr.pk %}" style="display:inline;margin-left:8px;">{% csrf_token %}<button class="btn btn-green" style="font-size:.7rem;">Accept</button></form>
+      <form method="post" action="{% url 'hospital_reject_join' jr.pk %}" style="display:inline;margin-left:4px;">{% csrf_token %}<button class="btn btn-red" style="font-size:.7rem;">Reject</button></form>
+    </div>{% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Doctors -->
+  <div class="card" id="doctors">
+    <div class="card-hdr"><div class="card-title">👨‍⚕️ Doctors</div><a href="{% url 'hospital_register_doctor' %}" class="btn btn-blue">+ Register</a></div>
+    {% if doctors %}
+    <div class="doc-grid">
+      {% for d in doctors %}
+      <div class="doc-card">
+        {% if d.profile_picture %}<img src="{{ d.profile_picture.url }}" class="doc-pic"/>{% else %}<div class="doc-pic-ph">👨‍⚕️</div>{% endif %}
+        <div style="font-weight:800;color:var(--dark);font-size:.85rem;">{{ d }}</div>
+        <div style="font-size:.74rem;color:var(--muted);">{{ d.specialist }}</div>
+        <div style="color:var(--blue);font-weight:700;font-size:.8rem;margin:4px 0;">৳{{ d.appointment_fee }}</div>
+        <div style="font-size:.68rem;color:var(--muted);">{{ d.doctor_id }}</div>
+        <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">
+          <a href="{% url 'hospital_book_appointment' d.pk %}" class="btn btn-blue" style="font-size:.7rem;">📅 Book</a>
+          {% with mem=d.hospital_memberships.first %}{% if mem %}
+          <form method="post" action="{% url 'hospital_remove_doctor' mem.pk %}">{% csrf_token %}<input type="hidden" name="reason" value="Removed by admin"/>
+            <button class="btn btn-red" style="font-size:.7rem;" onclick="return confirm('Remove doctor? Pending appointments will be cancelled.')">Remove</button>
+          </form>{% endif %}{% endwith %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}<div class="empty">No doctors yet.</div>{% endif %}
+  </div>
+
+  <!-- Appointments -->
+  <div class="card" id="appointments">
+    <div class="card-title">📋 Recent Appointments</div><br/>
+    {% if appointments %}
+    <table>
+      <thead><tr><th>Serial</th><th>Patient</th><th>Doctor</th><th>Date</th><th>Symptoms</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+      {% for a in appointments %}
+      <tr>
+        <td><strong>#{{ a.serial_number }}</strong></td>
+        <td><div style="font-weight:700;">{{ a.patient.user.get_full_name|default:a.patient.user.username }}</div><div style="font-size:.68rem;color:var(--muted);">{{ a.patient.patient_id }}</div></td>
+        <td style="color:var(--muted);">{{ a.doctor.user.get_full_name|default:a.doctor.user.username }}</td>
+        <td>{{ a.appointment_date }}</td>
+        <td style="font-size:.74rem;color:var(--muted);max-width:120px;">{{ a.symptoms|default:"—"|truncatewords:5 }}</td>
+        <td><span class="badge b-{{ a.status|lower }}">{{ a.status }}</span></td>
+        <td style="display:flex;gap:4px;flex-wrap:wrap;">
+          {% if a.status == 'PENDING' %}
+          <form method="post" action="{% url 'hospital_approve_appointment' a.pk %}">{% csrf_token %}<button class="btn btn-green" style="font-size:.68rem;padding:4px 9px;">✓ Confirm</button></form>
+          {% endif %}
+          {% if a.status == 'PENDING' or a.status == 'CONFIRMED' %}
+          <form method="post" action="{% url 'hospital_complete_appointment' a.pk %}">{% csrf_token %}<button class="btn btn-blue" style="font-size:.68rem;padding:4px 9px;">✓ Complete</button></form>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}<div class="empty">No appointments yet.</div>{% endif %}
+  </div>
+
+  <!-- Completed Appointments -->
+  <div class="card" id="completed">
+    <div class="card-title">✅ Completed Appointments</div><br/>
+    {% if completed_appointments %}
+    <table>
+      <thead><tr><th>Serial</th><th>Patient</th><th>Doctor</th><th>Date</th><th>Prescription</th></tr></thead>
+      <tbody>
+      {% for a in completed_appointments %}
+      <tr>
+        <td><strong>#{{ a.serial_number }}</strong></td>
+        <td><div style="font-weight:700;">{{ a.patient.user.get_full_name|default:a.patient.user.username }}</div><div style="font-size:.68rem;color:var(--muted);">{{ a.patient.patient_id }}</div></td>
+        <td>{{ a.doctor }}</td>
+        <td>{{ a.appointment_date }}</td>
+        <td>{% if a.prescription %}<span class="badge b-completed">✓ Written</span>{% else %}<span class="badge" style="background:var(--light);color:var(--muted);">Not yet</span>{% endif %}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}<div class="empty">No completed appointments yet.</div>{% endif %}
+  </div>
+
+  <!-- Patients -->
+  <div class="card" id="patients">
+    <div class="card-title">👥 Patients ({{ patients|length }})</div><br/>
+    {% if patients %}
+    <table>
+      <thead><tr><th>Patient</th><th>Age</th><th>Blood</th><th>Phone</th><th>Visits</th><th>Last Doctor</th><th>Last Visit</th><th>Upcoming</th></tr></thead>
+      <tbody>
+      {% for p in patients %}
+      <tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:8px;">
+            {% if p.profile_picture %}<img src="{{ p.profile_picture.url }}" style="width:30px;height:30px;border-radius:50%;object-fit:cover;"/>
+            {% else %}<div style="width:30px;height:30px;border-radius:50%;background:var(--light);display:flex;align-items:center;justify-content:center;font-size:.8rem;">👤</div>{% endif %}
+            <div><div style="font-weight:700;">{{ p.user.get_full_name|default:p.user.username }}</div><div style="font-size:.68rem;color:var(--muted);">{{ p.patient_id }}</div></div>
+          </div>
+        </td>
+        <td>{{ p.age|default:"—" }}</td>
+        <td>{% if p.blood_group %}<span class="badge" style="background:#fee2e2;color:#991b1b;">{{ p.blood_group }}</span>{% else %}—{% endif %}</td>
+        <td style="color:var(--muted);">{{ p.user.phone|default:"—" }}</td>
+        <td>{{ p.total_visits }}</td>
+        <td style="color:var(--muted);">{{ p.last_doctor|default:"—" }}</td>
+        <td style="color:var(--muted);">{{ p.last_date|default:"—" }}</td>
+        <td>{% if p.upcoming_appt %}<span class="upcoming-badge">{{ p.upcoming_appt.appointment_date }} · #{{ p.upcoming_appt.serial_number }}</span>{% else %}<span class="no-appt">No upcoming</span>{% endif %}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}<div class="empty">No patients yet.</div>{% endif %}
+  </div>
+
+  <!-- Staff -->
+  {% if staff_list %}
+  <div class="card">
+    <div class="card-hdr"><div class="card-title">👔 Staff Members</div><a href="{% url 'hospital_create_staff' %}" class="btn btn-blue">+ Add Staff</a></div>
+    <table>
+      <thead><tr><th>Name</th><th>Username</th><th>Assigned Doctors</th><th>Status</th></tr></thead>
+      <tbody>
+      {% for s in staff_list %}
+      <tr>
+        <td style="font-weight:700;">{{ s.user.get_full_name|default:s.user.username }}</td>
+        <td style="color:var(--muted);">{{ s.user.username }}</td>
+        <td style="font-size:.76rem;">{% for d in s.doctors.all %}{{ d }}{% if not forloop.last %}, {% endif %}{% endfor %}</td>
+        <td><span class="badge b-active">Active</span></td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  <!-- OT Referrals -->
+  {% if ot_referrals %}
+  <div class="card">
+    <div class="card-title">🔪 Pending OT Referrals</div><br/>
+    <table>
+      <thead><tr><th>Patient</th><th>Referred By</th><th>Reason</th><th>Action</th></tr></thead>
+      <tbody>
+      {% for r in ot_referrals %}
+      <tr>
+        <td>{{ r.patient }}</td><td>{{ r.referring_doctor }}</td>
+        <td style="font-size:.74rem;color:var(--muted);">{{ r.reason|truncatewords:10 }}</td>
+        <td><a href="{% url 'hospital_manage_ot' %}" class="btn" style="background:#fef9c3;color:#a16207;font-size:.7rem;">Book OT</a></td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

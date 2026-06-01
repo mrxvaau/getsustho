@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% block title %}Super Admin{% endblock %}
+{% block content %}
+<style>
+:root{--blue:#0ea5e9;--indigo:#6366f1;--green:#10b981;--red:#ef4444;--dark:#0f172a;--muted:#64748b;--light:#f1f5f9;--border:#e2e8f0;--white:#fff;}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',sans-serif;}
+body{display:flex;min-height:100vh;background:var(--light);}
+.sidebar{width:230px;background:var(--dark);min-height:100vh;position:fixed;top:0;left:0;display:flex;flex-direction:column;}
+.s-logo{padding:18px 20px;border-bottom:1px solid rgba(255,255,255,.07);}
+.s-logo h2{color:#fff;font-size:1rem;font-weight:800;}
+.s-logo h2 span{color:var(--red);}
+.s-logo p{color:#94a3b8;font-size:.68rem;margin-top:2px;}
+.s-nav{padding:12px 0;flex:1;}
+.s-nav a{display:flex;align-items:center;gap:9px;padding:9px 18px;color:#94a3b8;text-decoration:none;font-size:.8rem;font-weight:600;transition:.15s;}
+.s-nav a:hover{background:rgba(255,255,255,.07);color:#fff;}
+.s-nav a i{width:14px;text-align:center;}
+.s-lbl{padding:6px 18px 3px;font-size:.63rem;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:.05em;margin-top:6px;}
+.s-footer{padding:14px 18px;border-top:1px solid rgba(255,255,255,.07);}
+.s-footer a{color:#64748b;font-size:.76rem;text-decoration:none;}
+.s-footer a:hover{color:#fff;}
+.main{margin-left:230px;flex:1;padding:26px;}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;}
+.topbar h1{font-size:1.2rem;font-weight:800;color:var(--dark);}
+.topbar p{color:var(--muted);font-size:.8rem;}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:24px;}
+.stat{background:var(--white);border-radius:14px;padding:18px;border:1px solid var(--border);}
+.stat-icon{font-size:1.3rem;margin-bottom:6px;}
+.stat-val{font-size:1.6rem;font-weight:800;color:var(--dark);}
+.stat-lbl{font-size:.7rem;color:var(--muted);margin-top:2px;}
+.card{background:var(--white);border-radius:14px;border:1px solid var(--border);padding:20px;margin-bottom:18px;}
+.card-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.card-title{font-size:.9rem;font-weight:800;color:var(--dark);}
+table{width:100%;border-collapse:collapse;font-size:.78rem;}
+thead th{background:var(--light);padding:8px 12px;text-align:left;font-weight:700;color:var(--muted);}
+tbody td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover{background:#f8fafc;}
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:.68rem;font-weight:700;}
+.b-pending{background:#fef9c3;color:#a16207;} .b-approved{background:#dcfce7;color:#166534;} .b-rejected{background:#fee2e2;color:#991b1b;}
+.btn{padding:6px 14px;border:none;border-radius:8px;font-size:.74rem;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block;}
+.btn-blue{background:linear-gradient(135deg,var(--blue),var(--indigo));color:#fff;}
+.empty{color:var(--muted);font-size:.82rem;padding:10px 0;}
+.urgent-badge{background:var(--red);color:#fff;border-radius:20px;padding:1px 7px;font-size:.65rem;font-weight:800;margin-left:6px;}
+</style>
+
+<div class="sidebar">
+  <div class="s-logo"><h2>Medi<span>Care</span> Admin</h2><p>🛡️ Super Admin Panel</p></div>
+  <nav class="s-nav">
+    <div class="s-lbl">Overview</div>
+    <a href="{% url 'superadmin_dashboard' %}"><i class="fas fa-th-large"></i> Dashboard</a>
+    <div class="s-lbl">Verification</div>
+    <a href="#pending"><i class="fas fa-user-check"></i> Pending Doctors
+      {% if pending_verifications %}<span class="urgent-badge">{{ pending_verifications|length }}</span>{% endif %}
+    </a>
+    <div class="s-lbl">Records</div>
+    <a href="{% url 'superadmin_all_hospitals' %}"><i class="fas fa-hospital"></i> All Hospitals</a>
+    <a href="{% url 'superadmin_all_doctors' %}"><i class="fas fa-user-md"></i> All Doctors</a>
+    <a href="{% url 'superadmin_all_patients' %}"><i class="fas fa-users"></i> All Patients</a>
+    <a href="{% url 'superadmin_completed_patients' %}"><i class="fas fa-check-circle"></i> Completed Patients</a>
+  </nav>
+  <div class="s-footer"><a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a></div>
+</div>
+
+<div class="main">
+  <div class="topbar"><div><h1>🛡️ Super Admin Dashboard</h1><p>Platform-wide overview</p></div></div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-icon">🏥</div><div class="stat-val">{{ total_hospitals }}</div><div class="stat-lbl">Hospitals</div></div>
+    <div class="stat"><div class="stat-icon">👨‍⚕️</div><div class="stat-val">{{ total_doctors }}</div><div class="stat-lbl">Doctors</div></div>
+    <div class="stat"><div class="stat-icon">👥</div><div class="stat-val">{{ total_patients }}</div><div class="stat-lbl">Patients</div></div>
+    <div class="stat"><div class="stat-icon">📋</div><div class="stat-val">{{ total_appts }}</div><div class="stat-lbl">Appointments</div></div>
+    <div class="stat"><div class="stat-icon">✅</div><div class="stat-val">{{ completed_today }}</div><div class="stat-lbl">Completed Today</div></div>
+  </div>
+
+  <!-- Pending Verifications -->
+  <div class="card" id="pending">
+    <div class="card-hdr">
+      <div class="card-title">⏳ Pending Doctor Verifications
+        {% if pending_verifications %}<span class="urgent-badge">{{ pending_verifications|length }}</span>{% endif %}
+      </div>
+    </div>
+    {% if pending_verifications %}
+    <table>
+      <thead><tr><th>Doctor</th><th>Specialty</th><th>License No.</th><th>Workplace</th><th>Submitted</th><th>Action</th></tr></thead>
+      <tbody>
+      {% for v in pending_verifications %}
+      <tr>
+        <td><div style="font-weight:700;">{{ v.doctor }}</div><div style="font-size:.7rem;color:var(--muted);">{{ v.doctor.user.email }}</div></td>
+        <td>{{ v.doctor.specialist }}</td>
+        <td style="font-family:monospace;">{{ v.license_number }}</td>
+        <td style="font-size:.74rem;color:var(--muted);">{{ v.workplace_address|truncatewords:5 }}</td>
+        <td style="color:var(--muted);">{{ v.submitted_at|date:"d M Y" }}</td>
+        <td><a href="{% url 'superadmin_review_doctor' v.pk %}" class="btn btn-blue" style="font-size:.7rem;">Review →</a></td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}<p class="empty">No pending verifications ✅</p>{% endif %}
+  </div>
+
+  <!-- Recent Hospitals -->
+  <div class="card">
+    <div class="card-hdr"><div class="card-title">🏥 Recent Hospitals</div><a href="{% url 'superadmin_all_hospitals' %}" class="btn btn-blue" style="font-size:.72rem;">View All</a></div>
+    <table>
+      <thead><tr><th>Hospital</th><th>Location</th><th>Admin</th><th>Email</th></tr></thead>
+      <tbody>{% for h in recent_hospitals %}
+      <tr><td style="font-weight:700;">{{ h.name }}</td><td style="color:var(--muted);">{{ h.location }}</td><td>{{ h.admin.get_full_name|default:h.admin.username }}</td><td style="color:var(--muted);">{{ h.admin.email }}</td></tr>
+      {% endfor %}</tbody>
+    </table>
+  </div>
+
+  <!-- Recent Doctors -->
+  <div class="card">
+    <div class="card-hdr"><div class="card-title">👨‍⚕️ Recent Doctors</div><a href="{% url 'superadmin_all_doctors' %}" class="btn btn-blue" style="font-size:.72rem;">View All</a></div>
+    <table>
+      <thead><tr><th>Doctor</th><th>ID</th><th>Specialty</th><th>Reg. By</th><th>Verified</th><th>Active</th></tr></thead>
+      <tbody>{% for d in recent_doctors %}
+      <tr>
+        <td style="font-weight:700;">{{ d }}</td>
+        <td style="font-family:monospace;color:var(--muted);">{{ d.doctor_id }}</td>
+        <td>{{ d.specialist }}</td>
+        <td><span class="badge {% if d.registered_by == 'SELF' %}b-pending{% else %}b-approved{% endif %}">{{ d.registered_by }}</span></td>
+        <td>{% if d.is_verified %}<span class="badge b-approved">Yes</span>{% else %}<span class="badge b-pending">No</span>{% endif %}</td>
+        <td>{% if d.user.is_active %}<span class="badge b-approved">Active</span>{% else %}<span class="badge b-rejected">Inactive</span>{% endif %}</td>
+      </tr>{% endfor %}</tbody>
+    </table>
+  </div>
+
+  <!-- Contact messages -->
+  {% if contact_messages %}
+  <div class="card">
+    <div class="card-title">📬 Recent Contact Messages {% if unread_messages %}<span class="urgent-badge">{{ unread_messages }} unread</span>{% endif %}</div><br/>
+    <table>
+      <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Message</th><th>Date</th></tr></thead>
+      <tbody>{% for m in contact_messages %}
+      <tr>
+        <td style="font-weight:700;">{{ m.name }}</td><td style="color:var(--muted);">{{ m.email }}</td>
+        <td style="color:var(--muted);">{{ m.phone|default:"—" }}</td>
+        <td style="font-size:.76rem;">{{ m.message|truncatewords:10 }}</td>
+        <td style="color:var(--muted);">{{ m.created_at|date:"d M" }}</td>
+      </tr>{% endfor %}</tbody>
+    </table>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
